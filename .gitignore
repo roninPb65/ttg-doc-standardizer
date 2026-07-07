@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.vite/
+*.log
+.env
+.DS_Store
+
+# local rendered files
+data/
+outputs/
+
+# secrets — never commit
+k8s/secrets.yaml
