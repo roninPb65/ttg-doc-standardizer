@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ttg
+      POSTGRES_PASSWORD: ttg
+      POSTGRES_DB: ttg_docs
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ttg -d ttg_docs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      PORT: "4000"
+      NODE_ENV: production
+      DATABASE_URL: postgres://ttg:ttg@db:5432/ttg_docs
+      OUTPUT_DIR: /data/outputs
+      CORS_ORIGIN: "*"
+      # Local structuring — no API key. Model is baked into the image at build.
+      STRUCTURER: transformers
+      ZEROSHOT_MODEL: Xenova/nli-deberta-v3-xsmall
+      TRANSFORMERS_CACHE_DIR: /models
+      TRANSFORMERS_OFFLINE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - outputs:/data/outputs
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
+  outputs:

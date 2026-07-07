@@ -1,0 +1,37 @@
+export type JobStatus =
+  | "pending"
+  | "extracting"
+  | "structuring"
+  | "rendering"
+  | "complete"
+  | "failed";
+
+export type SourceKind = "upload" | "paste";
+
+export interface DocumentJob {
+  id: number;
+  title: string;
+  version: string;
+  owner_name: string;
+  owner_email: string;
+  source_kind: SourceKind;
+  source_filename: string | null;
+  status: JobStatus;
+  structured_json: unknown | null;
+  output_filename: string | null;
+  error: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateJobInput {
+  title: string;
+  version: string;
+  ownerName: string;
+  ownerEmail: string;
+  sourceKind: SourceKind;
+  sourceFilename: string | null;
+  content: string;
+  createdBy: string | null;
+}
