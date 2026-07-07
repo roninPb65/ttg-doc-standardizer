@@ -1,6 +1,6 @@
 import type { DocumentJob } from "./types";
 
-const BASE = "/api/documents";
+const BASE = `${import.meta.env.VITE_API_URL}/api/documents`;
 
 async function handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -31,11 +31,15 @@ export async function standardize(input: StandardizeInput): Promise<DocumentJob>
   form.append("version", input.version);
   form.append("ownerName", input.ownerName);
   form.append("ownerEmail", input.ownerEmail);
+
   if (input.file) form.append("file", input.file);
   else if (input.content) form.append("content", input.content);
 
-  const res = await fetch(BASE, { method: "POST", body: form });
-  // The pipeline returns the finished job (201) or an error (422 with { error }).
+  const res = await fetch(BASE, {
+    method: "POST",
+    body: form
+  });
+
   return handle<DocumentJob>(res);
 }
 
@@ -44,8 +48,13 @@ export async function listJobs(): Promise<DocumentJob[]> {
 }
 
 export async function deleteJob(id: number): Promise<void> {
-  const res = await fetch(`${BASE}/${id}`, { method: "DELETE" });
-  if (!res.ok && res.status !== 204) throw new Error(`Delete failed (${res.status})`);
+  const res = await fetch(`${BASE}/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!res.ok && res.status !== 204) {
+    throw new Error(`Delete failed (${res.status})`);
+  }
 }
 
 export function downloadUrl(id: number): string {
