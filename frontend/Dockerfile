@@ -16,6 +16,6 @@ COPY templates/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
 # Defaults for local `docker compose` (matches the backend service name there);
 # Render overrides these via render.yaml's `fromService`.
-ENV BACKEND_HOST=backend
-ENV BACKEND_PORT=4000
+ENV BACKEND_HOST=https://ttg-doc-standardizer-1.onrender.com/
+ENV BACKEND_PORT=443
 EXPOSE 8080
