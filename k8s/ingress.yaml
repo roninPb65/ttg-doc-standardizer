@@ -1,0 +1,27 @@
+# The frontend (nginx) serves the SPA and proxies /api to the backend service,
+# so a single host/route is enough. Adjust host, ingressClassName, and TLS to
+# match your cluster. An OIDC/Keycloak auth proxy should sit in front of this
+# ingress (see README, Access control) and inject the X-User-Email header.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: doc-standardizer
+  namespace: doc-standardizer
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: docs.ttgteams.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+  # tls:
+  #   - hosts: [docs.ttgteams.com]
+  #     secretName: doc-standardizer-tls

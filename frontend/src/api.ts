@@ -1,0 +1,53 @@
+import type { DocumentJob } from "./types";
+
+const BASE = "/api/documents";
+
+async function handle<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    let message = `Request failed (${res.status})`;
+    try {
+      const body = await res.json();
+      if (body?.error) message = body.error;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+  return res.json() as Promise<T>;
+}
+
+export interface StandardizeInput {
+  title: string;
+  version: string;
+  ownerName: string;
+  ownerEmail: string;
+  file?: File | null;
+  content?: string;
+}
+
+export async function standardize(input: StandardizeInput): Promise<DocumentJob> {
+  const form = new FormData();
+  form.append("title", input.title);
+  form.append("version", input.version);
+  form.append("ownerName", input.ownerName);
+  form.append("ownerEmail", input.ownerEmail);
+  if (input.file) form.append("file", input.file);
+  else if (input.content) form.append("content", input.content);
+
+  const res = await fetch(BASE, { method: "POST", body: form });
+  // The pipeline returns the finished job (201) or an error (422 with { error }).
+  return handle<DocumentJob>(res);
+}
+
+export async function listJobs(): Promise<DocumentJob[]> {
+  return handle<DocumentJob[]>(await fetch(BASE));
+}
+
+export async function deleteJob(id: number): Promise<void> {
+  const res = await fetch(`${BASE}/${id}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`Delete failed (${res.status})`);
+}
+
+export function downloadUrl(id: number): string {
+  return `${BASE}/${id}/download`;
+}
