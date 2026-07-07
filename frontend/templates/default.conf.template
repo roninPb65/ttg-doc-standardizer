@@ -1,0 +1,31 @@
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # SPA fallback
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Proxy API calls to the backend service.
+  # BACKEND_HOST / BACKEND_PORT are injected as env vars at deploy time
+  # (Render: BACKEND_HOST comes from the backend service's internal hostname,
+  # via render.yaml's `fromService`. Locally/Docker Compose these default to
+  # the compose service name.)
+  location /api/ {
+    proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # Forward the authenticated user (set by an upstream OIDC/Keycloak proxy).
+    proxy_set_header X-User-Email $http_x_user_email;
+    client_max_body_size 20m;
+  }
+
+  location /healthz {
+    proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/healthz;
+  }
+}
