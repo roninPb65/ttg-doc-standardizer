@@ -1,66 +1,53 @@
-databases:
-  - name: ttg-doc-db
-    plan: basic-256mb   # smallest paid plan; swap to "free" while testing if you want
-    region: oregon
-    postgresMajorVersion: "16"
-
-services:
-  - type: web
-    name: ttg-doc-backend
-    runtime: docker
-    plan: starter        # needs a paid plan to attach a disk (see below)
-    region: oregon
-    rootDir: backend
-    dockerfilePath: ./Dockerfile
-    healthCheckPath: /healthz
-    autoDeploy: true
-    disk:
-      name: ttg-doc-outputs
-      mountPath: /data/outputs
-      sizeGB: 1
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ttg-doc-db
-          property: connectionString
-      - key: OUTPUT_DIR
-        value: /data/outputs
-      - key: STRUCTURER
-        value: transformers
-      - key: ZEROSHOT_MODEL
-        value: Xenova/nli-deberta-v3-xsmall
-      - key: TRANSFORMERS_CACHE_DIR
-        value: /models
-      - key: TRANSFORMERS_OFFLINE
-        value: "true"
-      - key: MAX_UPLOAD_BYTES
-        value: "15728640"
-      - key: CORS_ORIGIN
-        value: "*"
-        # All browser traffic actually goes frontend -> nginx -> backend over
-        # the private network (see frontend's BACKEND_HOST/PORT below), so
-        # CORS isn't really exercised in this topology. If you later call the
-        # backend directly from a browser, tighten this to your frontend's
-        # public https://...onrender.com URL once you know it.
-
-  - type: web
-    name: ttg-doc-frontend
-    runtime: docker
-    plan: starter
-    region: oregon
-    rootDir: frontend
-    dockerfilePath: ./Dockerfile
-    autoDeploy: true
-    envVars:
-      - key: BACKEND_HOST
-        fromService:
-          type: web
-          name: ttg-doc-backend
-          property: host
-      - key: BACKEND_PORT
-        fromService:
-          type: web
-          name: ttg-doc-backend
-          property: port
+# Exported from Render on 2026-07-07T15:26:02Z
+version: "1"
+projects:
+- name: My project
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: ttg-doc-standardizer
+      runtime: docker
+      repo: https://github.com/roninPb65/ttg-doc-standardizer
+      plan: free
+      envVars:
+      - key: property
+        sync: false
+      - key: fromDatabase
+        sync: false
+      - key: value
+        sync: false
+      - key: envVars
+        sync: false
+      - key: sizeGB
+        sync: false
+      - key: mountPath
+        sync: false
+      - key: disk
+        sync: false
+      - key: autoDeploy
+        sync: false
+      - key: healthCheckPath
+        sync: false
+      - key: dockerfilePath
+        sync: false
+      - key: rootDir
+        sync: false
+      - key: runtime
+        sync: false
+      - key: name
+        sync: false
+      - key: services
+        sync: false
+      - key: postgresMajorVersion
+        sync: false
+      - key: region
+        sync: false
+      - key: plan
+        sync: false
+      - key: databases
+        sync: false
+      region: oregon
+      dockerContext: .
+      dockerfilePath: ./Dockerfile
+      autoDeployTrigger: commit
